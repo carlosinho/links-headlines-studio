@@ -1,0 +1,89 @@
+/**
+ * Links & Headlines Studio - Frontend Styles
+ * 
+ * @package LinksHeadlinesStudio
+ * @version 0.0.1
+ */
+
+/* Base Link Styles */
+.lhs-styled-links a {
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+
+.lhs-styled-links a:hover {
+    text-decoration: none;
+    border-bottom-color: currentColor;
+}
+
+/* Headline Styles */
+.lhs-styled-headlines h1,
+.lhs-styled-headlines h2,
+.lhs-styled-headlines h3,
+.lhs-styled-headlines h4,
+.lhs-styled-headlines h5,
+.lhs-styled-headlines h6 {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Link Hover Effects */
+.lhs-link-effect-underline a:hover {
+    border-bottom: 2px solid currentColor;
+}
+
+.lhs-link-effect-slide a {
+    position: relative;
+    overflow: hidden;
+}
+
+.lhs-link-effect-slide a::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+}
+
+.lhs-link-effect-slide a:hover::before {
+    width: 100%;
+}
+
+.lhs-link-effect-glow a:hover {
+    text-shadow: 0 0 8px currentColor;
+}
+
+/* Headline Effects */
+.lhs-headline-effect-fade h1:hover,
+.lhs-headline-effect-fade h2:hover,
+.lhs-headline-effect-fade h3:hover,
+.lhs-headline-effect-fade h4:hover,
+.lhs-headline-effect-fade h5:hover,
+.lhs-headline-effect-fade h6:hover {
+    opacity: 0.8;
+}
+
+.lhs-headline-effect-scale h1:hover,
+.lhs-headline-effect-scale h2:hover,
+.lhs-headline-effect-scale h3:hover,
+.lhs-headline-effect-scale h4:hover,
+.lhs-headline-effect-scale h5:hover,
+.lhs-headline-effect-scale h6:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .lhs-styled-headlines h1,
+    .lhs-styled-headlines h2,
+    .lhs-styled-headlines h3,
+    .lhs-styled-headlines h4,
+    .lhs-styled-headlines h5,
+    .lhs-styled-headlines h6 {
+        font-size: 90%;
+    }
+} 
