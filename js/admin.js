@@ -2,7 +2,7 @@
  * Links & Headlines Studio - Admin JavaScript
  * 
  * @package LinksHeadlinesStudio
- * @version 0.0.1
+ * @version 0.0.2
  */
 
 (function($) {
@@ -23,6 +23,9 @@
         
         // Initialize conditional options
         initConditionalOptions();
+        
+        // Initialize code generation
+        initCodeGeneration();
     }
 
     /**
@@ -320,7 +323,8 @@
                             settings.headline_levels.push($input.val());
                         }
                     } else {
-                        settings[name] = $input.is(':checked');
+                        // Handle single checkboxes - use 1/0 format to match generateCodeOnDemand
+                        settings[name] = $input.is(':checked') ? 1 : 0;
                     }
                 } else {
                     settings[name] = $input.val();
@@ -466,7 +470,8 @@
                         
                         if ($input.length) {
                             if ($input.is(':checkbox')) {
-                                $input.prop('checked', value);
+                                // Handle 1/0 integer values only
+                                $input.prop('checked', value == 1);
                             } else {
                                 $input.val(value);
                             }
@@ -538,6 +543,215 @@
         `;
         
         $('<style>').prop('type', 'text/css').html(css).appendTo('head');
+    }
+
+    /**
+     * Initialize code generation functionality
+     */
+    function initCodeGeneration() {
+        console.log('Initializing code generation...');
+        
+        // Setup copy-to-clipboard functionality
+        setupCodeCopy();
+        
+        // Handle "Give Me Code" button click (using event delegation)
+        $(document).on('click', '.lhs-give-me-code', function(e) {
+            e.preventDefault();
+            console.log('Give Me Code button clicked!');
+            
+            // Simple test first - show the section immediately
+            const $codeSection = $('#lhs-generated-code-section');
+            console.log('Code section found:', $codeSection.length);
+            
+            if ($codeSection.length === 0) {
+                console.error('Code section not found! Looking for #lhs-generated-code-section');
+                return;
+            }
+            
+            const $button = $(this);
+            const originalText = $button.val();
+            
+            // Update button state
+            $button.val('Generating...').prop('disabled', true);
+            
+            // Generate code based on current form values
+            generateCodeOnDemand().then(function() {
+                console.log('Code generation successful');
+                
+                // Show the code section
+                $codeSection.slideDown(300);
+                
+                // Scroll to the code section
+                $('html, body').animate({
+                    scrollTop: $codeSection.offset().top - 50
+                }, 500);
+                
+                // Reset button
+                $button.val(originalText).prop('disabled', false);
+            }).catch(function() {
+                console.log('Code generation failed');
+                // Reset button on error
+                $button.val(originalText).prop('disabled', false);
+            });
+        });
+        
+        console.log('Found Give Me Code buttons:', $('.lhs-give-me-code').length);
+    }
+
+    /**
+     * Setup copy-to-clipboard functionality
+     */
+    function setupCodeCopy() {
+        $('.lhs-copy-code').on('click', function(e) {
+            e.preventDefault(); // Prevent any default action
+            
+            const $button = $(this); // Capture button reference
+            const targetId = $button.data('target');
+            const codeBlock = $('#' + targetId + ' code');
+            const text = codeBlock.text();
+            
+            function showCopyFeedback() {
+                const originalText = $button.text();
+                $button.text('Copied!');
+                setTimeout(function() {
+                    $button.text(originalText);
+                }, 2000);
+            }
+            
+            function fallbackCopyText(text) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showCopyFeedback();
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                }
+                document.body.removeChild(textArea);
+            }
+            
+            // Try to use the modern clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showCopyFeedback();
+                }).catch(function() {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        });
+    }
+
+    /**
+     * Generate code on demand (when button is clicked)
+     */
+    function generateCodeOnDemand() {
+        return new Promise(function(resolve, reject) {
+            console.log('Starting code generation...');
+            
+            // Check if AJAX variables are available
+            if (typeof lhs_admin_ajax === 'undefined') {
+                console.error('lhs_admin_ajax is not defined!');
+                reject();
+                return;
+            }
+            
+            if (!lhs_admin_ajax.ajax_url) {
+                console.error('AJAX URL is not available!');
+                reject();
+                return;
+            }
+            
+            const nonceValue = $('#lhs_nonce').val();
+            if (!nonceValue) {
+                console.error('Nonce not found!');
+                reject();
+                return;
+            }
+            
+            // Get current form data
+            var formData = {
+                action: 'lhs_generate_code_preview',
+                nonce: nonceValue
+            };
+            
+            console.log('Nonce value:', formData.nonce);
+            console.log('AJAX URL:', lhs_admin_ajax.ajax_url);
+            
+            // Collect all form field values
+            $('#lhs-settings-form input, #lhs-settings-form select').each(function() {
+                var $field = $(this);
+                var name = $field.attr('name');
+                var value = $field.val();
+                
+                if (!name) return;
+                
+                // Skip WordPress form fields that would interfere
+                if (name === 'action' || name === 'option_page' || name.startsWith('_wp')) {
+                    return;
+                }
+                
+                if ($field.is('[type="checkbox"]')) {
+                    if (name.endsWith('[]')) {
+                        // Handle checkbox arrays (like headline_levels[])
+                        if (!formData[name.slice(0, -2)]) {
+                            formData[name.slice(0, -2)] = [];
+                        }
+                        if ($field.is(':checked')) {
+                            formData[name.slice(0, -2)].push(value);
+                        }
+                    } else {
+                        // Handle 1/0 integer values only
+                        formData[name] = $field.is(':checked') ? 1 : 0;
+                    }
+                } else {
+                    formData[name] = value;
+                }
+            });
+            
+            // Ensure our action is set correctly
+            formData.action = 'lhs_generate_code_preview';
+            
+            console.log('Form data collected:', formData);
+            
+            // Make AJAX request to generate code
+            $.post(lhs_admin_ajax.ajax_url, formData, function(response) {
+                console.log('AJAX response received:', response);
+                
+                if (response.success) {
+                    // Update link CSS code
+                    if (response.data.link_css) {
+                        $('#lhs-link-css-code code').text(response.data.link_css);
+                        console.log('Link CSS updated');
+                    }
+                    
+                    // Update headline CSS code
+                    if (response.data.headline_css) {
+                        $('#lhs-headline-css-code code').text(response.data.headline_css);
+                        console.log('Headline CSS updated');
+                    }
+                    
+                    resolve();
+                } else {
+                    console.log('Error in code generation response:', response);
+                    reject();
+                }
+            }).fail(function(xhr, status, error) {
+                console.log('Code generation AJAX failed:', status, error);
+                console.log('XHR:', xhr);
+                if (xhr.responseText) {
+                    console.log('Response text:', xhr.responseText);
+                }
+                reject();
+            });
+        });
     }
 
     // Initialize when document is ready

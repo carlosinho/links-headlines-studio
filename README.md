@@ -1,227 +1,233 @@
 # Links & Headlines Studio by KK
 
-A WordPress plugin that provides stunning styling options for links and headlines/subheadings on your WordPress website.
+A WordPress plugin that provides nice styling options for links and headlines on your WordPress website with real-time preview and code generation.
 
 ## 🚀 Features
 
-### Link Styling
-- **Custom hover colors** with color picker
-- **Multiple hover effects**:
-  - Animated underline
-  - Slide effect
-  - Glow effect
-- **Customizable transition duration**
-- **Smooth animations** with jQuery easing
+### Link Effects
+- **Custom Colors**: Base and hover colors with color picker
+- **Multiple Hover Effects**:
+  - Animated Underline (with thickness control)
+  - Slide Effect (with custom color and opacity)
+  - Glow Effect (with intensity control)
+  - None (color changes only)
+- **Base Decoration**: Choose underline or none
+- **Transition Duration**: Customizable animation speed (100-2000ms)
+- **Enable/Disable Toggle**: Turn link effects on/off
 
-### Headlines & Subheadings
-- **Custom font families** including web-safe fonts
-- **Font weight customization** (thin to black)
-- **Hover effects**:
-  - Fade effect
-  - Scale effect
-- **Responsive design** optimization
+### Headline Effects
+- **Selective Application**: Choose which headline levels (H1-H6) to style
+- **Multiple Hover Effects**:
+  - Fade Effect (with opacity control)
+  - Color Shift (with custom hover color)
+  - Soft Glow (with color, intensity, and blur control)
+  - Brightness Shift (with brightness and contrast control)
+  - None (no effects)
+- **Transition Duration**: Customizable animation speed (100-2000ms)
+- **Enable/Disable Toggle**: Turn headline effects on/off
 
 ### Advanced Features
-- **Live preview** in admin panel
-- **Auto-apply to content** or manual implementation
-- **Custom CSS** input for advanced users
-- **Import/Export settings** for easy backup and migration
-- **Modern admin interface** with toggle switches and color pickers
-- **Intersection Observer** for scroll animations
-- **WordPress coding standards** compliant
-- **Translation ready** with i18n support
+- **Live Preview**: Real-time preview with dark/light mode toggle
+- **Code Generation**: "Give Me Code" button generates ready-to-use CSS
+- **Settings Management**:
+  - Save settings to WordPress database
+  - Reset to defaults
+  - Export settings as JSON
+  - Import settings from JSON
+- **Professional Admin Interface**: Modern WordPress-style UI
+- **Frontend Integration**: Automatic style injection based on saved settings
 
 ## 📁 File Structure
 
 ```
 links-headlines-studio/
-├── links-headlines-studio.php    # Main plugin file
+├── links-headlines-studio.php    # Main plugin file with AJAX handlers
 ├── css/
-│   ├── frontend.css              # Frontend styles
+│   ├── frontend.css              # Frontend styles (basic)
 │   └── admin.css                 # Admin panel styles
 ├── js/
-│   ├── frontend.js               # Frontend JavaScript
-│   └── admin.js                  # Admin panel JavaScript
+│   ├── frontend.js               # Frontend JavaScript (basic)
+│   └── admin.js                  # Admin panel JavaScript with live preview
 ├── includes/
 │   └── admin-page.php            # Admin page template
-├── languages/                    # Translation files (future)
 └── README.md                     # Documentation
 ```
 
 ## 🔧 Installation
 
-1. **Download/Clone** the plugin files to your WordPress plugins directory:
+1. **Upload** the plugin files to your WordPress plugins directory:
    ```
    /wp-content/plugins/links-headlines-studio/
    ```
 
 2. **Activate** the plugin through the WordPress admin panel:
    - Go to `Plugins > Installed Plugins`
-   - Find "Links & Headlines Studio"
+   - Find "Links & Headlines Studio by KK"
    - Click "Activate"
 
 3. **Configure** the plugin:
-   - Navigate to `LH Studio` in your WordPress admin menu
+   - Navigate to `Tools > Links & Headlines` in your WordPress admin
    - Customize your link and headline settings
    - Use the live preview to see changes in real-time
+   - Click "Give Me Code" to generate CSS for manual implementation
 
-## ⚙️ Configuration
+## ⚙️ Configuration Options
 
-### General Settings
-- **Enable/Disable** the plugin functionality
-- **Auto-apply** styles to content automatically
+### Link Effects Settings
+- **Enabled**: Toggle to enable/disable all link effects
+- **Base Link Color**: Default color for links
+- **Base Link Decoration**: Underline or none
+- **Hover Color**: Color when hovering over links
+- **Hover Effect**: Choose from multiple animation styles
+- **Effect Duration**: Animation speed in milliseconds
 
-### Link Styling Options
-- **Link Hover Color**: Choose any color using the color picker
-- **Hover Effects**: Select from multiple animation styles
-- **Transition Duration**: Control animation speed (100-2000ms)
+#### Effect-Specific Options
+- **Underline Effect**: Thickness control (1-10px)
+- **Slide Effect**: Custom color and opacity (0.1-1.0)
+- **Glow Effect**: Intensity control (2-20px)
 
-### Headlines & Subheadings
-- **Font Family**: Choose from web-safe fonts or inherit from theme
-- **Font Weight**: Select from thin (100) to black (900)
-- **Hover Effects**: Add interactive animations to headlines
+### Headline Effects Settings
+- **Enabled**: Toggle to enable/disable all headline effects
+- **Headline Levels**: Select which levels (H1-H6) to apply effects to
+- **Hover Effect**: Choose from multiple animation styles
+- **Effect Duration**: Animation speed in milliseconds
 
-### Advanced Settings
-- **Custom CSS**: Add your own CSS for further customization
-- **Import/Export**: Backup and restore your settings
+#### Effect-Specific Options
+- **Fade Effect**: Target opacity (0.1-0.9)
+- **Color Shift**: Custom hover color
+- **Soft Glow**: Color, intensity (1-20px), and blur (0-10px)
+- **Brightness**: Brightness (0.5-2.0) and contrast (0.5-2.0) levels
 
 ## 🎨 Usage
 
-### Automatic Application
-If "Auto Apply to Content" is enabled, the plugin will automatically style all links and headlines on your site.
-
-### Manual Implementation
-Add these CSS classes to specific elements for targeted styling:
-
-```html
-<!-- For links -->
-<div class="lhs-styled-links">
-    <a href="#">This link will have custom styling</a>
-</div>
-
-<!-- For headlines -->
-<div class="lhs-styled-headlines">
-    <h1>This headline will have custom styling</h1>
-    <h2>This subheading too</h2>
-</div>
+### Option 1: Automatic Frontend Application
+The plugin automatically injects styles based on your saved settings to:
+```css
+.entry-content a, .post-content a, .page-content a, article a
+.entry-content h1-h6, .post-content h1-h6, .page-content h1-h6, article h1-h6
 ```
 
-### PHP Implementation
-```php
-// Add classes programmatically
-add_filter('the_content', function($content) {
-    return '<div class="lhs-styled-links lhs-styled-headlines">' . $content . '</div>';
-});
+### Option 2: Manual CSS Implementation
+1. Configure your settings in the admin panel
+2. Click "Give Me Code" button
+3. Copy the generated CSS code
+4. Add it to your theme's `style.css` or use a custom CSS plugin
+
+### Option 3: Targeted Implementation
+Use the generated CSS code but modify the selectors for specific areas:
+```css
+/* Only style links in specific containers */
+.my-custom-container a {
+    /* Generated link CSS here */
+}
+
+/* Only style headlines in specific areas */
+.my-custom-area h1:hover {
+    /* Generated headline CSS here */
+}
 ```
 
-## 🛠️ Development
+## 🛠️ Technical Details
 
-### WordPress Hooks Used
-- `init` - Plugin initialization
-- `wp_enqueue_scripts` - Frontend assets
-- `admin_enqueue_scripts` - Admin assets
-- `admin_menu` - Admin menu registration
+### WordPress Integration
+- **Settings Storage**: Uses WordPress Options API (`lhs_options`)
+- **AJAX Handlers**: Secure nonce-verified AJAX for all operations
+- **Admin Menu**: Added under Tools submenu
+- **Asset Management**: Proper enqueuing with version control
 
 ### AJAX Actions
-- `lhs_get_settings` - Retrieve plugin settings
-- `lhs_save_settings` - Save plugin settings
-- `lhs_reset_settings` - Reset to default settings
+- `lhs_save_settings` - Save configuration to database
+- `lhs_reset_settings` - Reset to default configuration
+- `lhs_generate_code_preview` - Generate CSS code on demand
 
 ### Security Features
 - **Nonce verification** for all AJAX requests
-- **Data sanitization** and validation
-- **Capability checks** for admin access
-- **Direct access prevention** for all files
+- **Capability checks** (`manage_options`) for admin access
+- **Data sanitization** using WordPress functions
+- **Direct access prevention** for all PHP files
+
+### Frontend Performance
+- **Conditional Loading**: Styles only injected when effects are enabled
+- **Optimized CSS**: Minimal impact on page load
+- **No Frontend JavaScript**: Unless specifically needed
 
 ## 🎯 Browser Support
 
-- **Modern browsers** with CSS3 and ES5+ support
-- **Internet Explorer 11+**
-- **Graceful degradation** for older browsers
-- **Mobile responsive** design
+- **Modern browsers** with CSS3 support
+- **Progressive Enhancement**: Graceful degradation for older browsers
+- **Mobile Responsive**: All effects work on touch devices
 
 ## 📝 Customization Examples
 
-### Custom Link Effects
+### Link Slide Effect CSS
 ```css
-.lhs-styled-links a {
+.entry-content a {
     position: relative;
+    overflow: hidden;
     text-decoration: none;
+    color: #2271b1;
+    transition: all 300ms ease;
 }
 
-.lhs-styled-links a::after {
+.entry-content a::before {
     content: '';
     position: absolute;
-    bottom: -2px;
+    bottom: 0;
     left: 0;
     width: 0;
     height: 2px;
-    background: currentColor;
-    transition: width 0.3s ease;
+    background-color: #2271b1;
+    opacity: 1.0;
+    transition: width 300ms ease;
 }
 
-.lhs-styled-links a:hover::after {
+.entry-content a:hover::before {
     width: 100%;
 }
 ```
 
-### Custom Headline Animations
+### Headline Glow Effect CSS
 ```css
-@keyframes headlineGlow {
-    0% { text-shadow: none; }
-    50% { text-shadow: 0 0 20px currentColor; }
-    100% { text-shadow: none; }
-}
-
-.lhs-styled-headlines h1:hover {
-    animation: headlineGlow 1s ease-in-out;
+.entry-content h1:hover, .entry-content h2:hover {
+    text-shadow: 0 0 3px #2271b1, 0 0 5px #2271b1;
+    transition: all 300ms ease;
 }
 ```
 
-## 🔄 Updates & Maintenance
+## 🔄 Version History
 
-### Version History
-- **v0.0.1** - Initial release with core functionality
+### v0.0.2 (Current)
+- **Live Preview**: Real-time preview with dark/light mode
+- **Code Generation**: On-demand CSS generation with copy functionality
+- **Settings Management**: Save, reset, import/export functionality
+- **Multiple Effects**: Comprehensive link and headline effect options
+- **Professional UI**: WordPress-style admin interface
+- **AJAX Integration**: Seamless admin experience
+
+### v0.0.1
+- Initial development release
 
 ### Planned Features
-- **Google Fonts integration**
-- **More animation effects**
-- **Typography presets**
-- **Performance optimizations**
+- **Google Fonts Integration**
+- **Effect Presets**
+- **Animation Timing Functions**
+- **Advanced Selectors**
+- **Performance Dashboard**
 
 ## 📞 Support
 
-For support, feature requests, or bug reports:
+For support or feature requests:
 
-1. Check the plugin settings and live preview
-2. Review the documentation above
-3. Test with default WordPress themes
-4. Check browser console for JavaScript errors
+1. **Test Settings**: Use the live preview to verify your configuration
+2. **Generate Code**: Use "Give Me Code" to get implementation-ready CSS
+3. **Check Compatibility**: Test with your theme's CSS selectors
+4. **Browser Console**: Check for JavaScript errors in admin panel
 
-## 📄 License
+## 🏷️ Plugin Information
 
-This plugin is licensed under the GPL v2 or later.
-
-## 👨‍💻 Developer Notes
-
-### WordPress Coding Standards
-- PSR-4 autoloading structure
-- Proper sanitization and validation
-- Security best practices implemented
-- Performance optimized with conditional loading
-
-### JavaScript Architecture
-- jQuery-based with fallbacks
-- Intersection Observer for performance
-- Modular code structure
-- Error handling and graceful degradation
-
-### CSS Architecture
-- BEM-inspired naming convention
-- Mobile-first responsive design
-- CSS custom properties ready
-- Minimal specificity conflicts
-
----
-
-**Links & Headlines Studio** - Transform your WordPress site's typography with style! ✨ 
+- **Version**: 0.0.2
+- **Requires WordPress**: 5.0+
+- **Tested up to**: 6.4
+- **License**: GPL v2 or later
+- **Author**: Karol K
+- **Text Domain**: links-headlines-studio 

@@ -3,7 +3,7 @@
  * Admin Page Template
  * 
  * @package LinksHeadlinesStudio
- * @version 0.0.1
+ * @version 0.0.2
  */
 
 // Prevent direct access
@@ -14,6 +14,157 @@ if (!defined('ABSPATH')) {
 // Get current settings
 $options = get_option('lhs_options', array());
 $nonce = wp_create_nonce('lhs_nonce');
+
+// Generate code snippets based on current settings
+function lhs_generate_link_css_code($options) {
+    if (empty($options['enable_link_styling'])) {
+        return "/* Link effects are disabled */";
+    }
+    
+    $link_color = isset($options['link_color']) ? $options['link_color'] : '#2271b1';
+    $hover_color = isset($options['link_hover_color']) ? $options['link_hover_color'] : '#0073aa';
+    $duration = isset($options['link_transition_duration']) ? $options['link_transition_duration'] : '300';
+    $base_decoration = isset($options['link_base_decoration']) ? $options['link_base_decoration'] : 'underline';
+    $link_effect = isset($options['link_effect']) ? $options['link_effect'] : 'none';
+    
+    $css = "/* Base link styles */\n";
+    $css .= ".entry-content a, .post-content a, .page-content a, article a {\n";
+    $css .= "    color: {$link_color} !important;\n";
+    $css .= "    transition: all {$duration}ms ease;\n";
+    $css .= "    text-decoration: none !important;\n";
+    $css .= "    border-bottom: none !important;\n";
+    $css .= "    background-image: none !important;\n";
+    $css .= "}\n\n";
+    
+    $css .= ".entry-content a:hover, .post-content a:hover, .page-content a:hover, article a:hover {\n";
+    $css .= "    color: {$hover_color} !important;\n";
+    $css .= "}\n\n";
+    
+    if ($link_effect !== 'none') {
+        $css .= "/* Link effect: {$link_effect} */\n";
+        switch ($link_effect) {
+            case 'underline':
+                $underline_thickness = isset($options['link_underline_thickness']) ? $options['link_underline_thickness'] : '2';
+                $css .= ".entry-content a, .post-content a, .page-content a, article a {\n";
+                $css .= "    text-decoration: {$base_decoration} !important;\n";
+                $css .= "    border-bottom: {$underline_thickness}px solid transparent !important;\n";
+                $css .= "}\n";
+                $css .= ".entry-content a:hover, .post-content a:hover, .page-content a:hover, article a:hover {\n";
+                $css .= "    border-bottom-color: currentColor !important;\n";
+                $css .= "}\n";
+                break;
+            case 'slide':
+                $underline_thickness = isset($options['link_underline_thickness']) ? $options['link_underline_thickness'] : '2';
+                $slide_color = isset($options['link_slide_color']) ? $options['link_slide_color'] : '#2271b1';
+                $slide_opacity = isset($options['link_slide_opacity']) ? $options['link_slide_opacity'] : '1.0';
+                $css .= ".entry-content a, .post-content a, .page-content a, article a {\n";
+                $css .= "    position: relative !important;\n";
+                $css .= "    text-decoration: {$base_decoration} !important;\n";
+                $css .= "    overflow: hidden !important;\n";
+                $css .= "}\n";
+                $css .= ".entry-content a::before, .post-content a::before, .page-content a::before, article a::before {\n";
+                $css .= "    content: '' !important;\n";
+                $css .= "    position: absolute !important;\n";
+                $css .= "    bottom: 0 !important;\n";
+                $css .= "    left: 0 !important;\n";
+                $css .= "    width: 0 !important;\n";
+                $css .= "    height: {$underline_thickness}px !important;\n";
+                $css .= "    background-color: {$slide_color} !important;\n";
+                $css .= "    opacity: {$slide_opacity} !important;\n";
+                $css .= "    transition: width {$duration}ms ease !important;\n";
+                $css .= "    z-index: 1 !important;\n";
+                $css .= "}\n";
+                $css .= ".entry-content a:hover::before, .post-content a:hover::before, .page-content a:hover::before, article a:hover::before {\n";
+                $css .= "    width: 100% !important;\n";
+                $css .= "}\n";
+                break;
+            case 'glow':
+                $glow_intensity = isset($options['link_glow_intensity']) ? $options['link_glow_intensity'] : '8';
+                $css .= ".entry-content a, .post-content a, .page-content a, article a {\n";
+                $css .= "    text-decoration: {$base_decoration} !important;\n";
+                $css .= "}\n";
+                $css .= ".entry-content a:hover, .post-content a:hover, .page-content a:hover, article a:hover {\n";
+                $css .= "    text-shadow: 0 0 {$glow_intensity}px currentColor;\n";
+                $css .= "}\n";
+                break;
+        }
+    } else {
+        $css .= "/* No effects - base decoration only */\n";
+        $css .= ".entry-content a, .post-content a, .page-content a, article a {\n";
+        $css .= "    text-decoration: {$base_decoration} !important;\n";
+        $css .= "}\n";
+    }
+    
+    return $css;
+}
+
+function lhs_generate_headline_css_code($options) {
+    if (empty($options['enable_headline_styling'])) {
+        return "/* Headline effects are disabled */";
+    }
+    
+    $headline_effect = isset($options['headline_effect']) ? $options['headline_effect'] : 'none';
+    $headline_levels = isset($options['headline_levels']) ? $options['headline_levels'] : array('h1', 'h2', 'h3');
+    $headline_duration = isset($options['headline_transition_duration']) ? $options['headline_transition_duration'] : '300';
+    
+    if ($headline_effect === 'none' || empty($headline_levels)) {
+        return "/* No headline effects selected */";
+    }
+    
+    $css = "/* Headline effects: {$headline_effect} */\n";
+    
+    // Create selectors for the selected headline levels
+    $selectors = array();
+    $hover_selectors = array();
+    foreach ($headline_levels as $level) {
+        if (in_array($level, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6'))) {
+            $selectors[] = ".entry-content {$level}, .post-content {$level}, .page-content {$level}, article {$level}";
+            $hover_selectors[] = ".entry-content {$level}:hover, .post-content {$level}:hover, .page-content {$level}:hover, article {$level}:hover";
+        }
+    }
+    
+    if (!empty($selectors)) {
+        $selector_string = implode(",\n", $selectors);
+        $hover_selector_string = implode(",\n", $hover_selectors);
+        
+        $css .= "{$selector_string} {\n";
+        $css .= "    transition: all {$headline_duration}ms ease;\n";
+        $css .= "    cursor: default;\n";
+        $css .= "}\n\n";
+        
+        switch ($headline_effect) {
+            case 'fade':
+                $fade_opacity = isset($options['headline_fade_opacity']) ? $options['headline_fade_opacity'] : '0.7';
+                $css .= "{$hover_selector_string} {\n";
+                $css .= "    opacity: {$fade_opacity};\n";
+                $css .= "}\n";
+                break;
+            case 'color_shift':
+                $hover_color = isset($options['headline_hover_color']) ? $options['headline_hover_color'] : '#2271b1';
+                $css .= "{$hover_selector_string} {\n";
+                $css .= "    color: {$hover_color} !important;\n";
+                $css .= "}\n";
+                break;
+            case 'glow':
+                $glow_color = isset($options['headline_glow_color']) ? $options['headline_glow_color'] : '#2271b1';
+                $glow_intensity = isset($options['headline_glow_intensity']) ? $options['headline_glow_intensity'] : '5';
+                $glow_blur = isset($options['headline_glow_blur']) ? $options['headline_glow_blur'] : '3';
+                $css .= "{$hover_selector_string} {\n";
+                $css .= "    text-shadow: 0 0 {$glow_blur}px {$glow_color}, 0 0 {$glow_intensity}px {$glow_color};\n";
+                $css .= "}\n";
+                break;
+            case 'brightness':
+                $brightness = isset($options['headline_brightness']) ? $options['headline_brightness'] : '1.2';
+                $contrast = isset($options['headline_contrast']) ? $options['headline_contrast'] : '1.1';
+                $css .= "{$hover_selector_string} {\n";
+                $css .= "    filter: brightness({$brightness}) contrast({$contrast});\n";
+                $css .= "}\n";
+                break;
+        }
+    }
+    
+    return $css;
+}
 ?>
 
 <div class="wrap lhs-admin-container">
@@ -37,7 +188,7 @@ $nonce = wp_create_nonce('lhs_nonce');
                         </th>
                         <td>
                             <label>
-                                <input type="checkbox" id="lhs_enable_link_styling" name="enable_link_styling" value="1" <?php checked(isset($options['enable_link_styling']) ? $options['enable_link_styling'] : true); ?>>
+                                <input type="checkbox" id="lhs_enable_link_styling" name="enable_link_styling" value="1" <?php checked(isset($options['enable_link_styling']) ? !empty($options['enable_link_styling']) : true); ?>>
                                 <?php _e('Enable link effects', 'links-headlines-studio'); ?>
                             </label>
                         </td>
@@ -158,7 +309,7 @@ $nonce = wp_create_nonce('lhs_nonce');
                         </th>
                         <td>
                             <label>
-                                <input type="checkbox" id="lhs_enable_headline_styling" name="enable_headline_styling" value="1" <?php checked(isset($options['enable_headline_styling']) ? $options['enable_headline_styling'] : true); ?>>
+                                <input type="checkbox" id="lhs_enable_headline_styling" name="enable_headline_styling" value="1" <?php checked(isset($options['enable_headline_styling']) ? !empty($options['enable_headline_styling']) : true); ?>>
                                 <?php _e('Enable headline effects', 'links-headlines-studio'); ?>
                             </label>
                         </td>
@@ -330,7 +481,42 @@ $nonce = wp_create_nonce('lhs_nonce');
             </div>
         </div>
 
+        <!-- Generated Code Section (Hidden by default) -->
+        <div id="lhs-generated-code-section" class="lhs-code-section" style="display: none;">
+            <div class="lhs-code-section-header">
+                <h3><?php _e('Generated CSS Code', 'links-headlines-studio'); ?></h3>
+                <p><?php _e('Copy and paste this CSS code into your theme\'s stylesheet or use a custom CSS plugin.', 'links-headlines-studio'); ?></p>
+            </div>
+            
+            <!-- Link CSS Code -->
+            <div class="lhs-code-block-wrapper">
+                <div class="lhs-code-block-header">
+                    <h4><?php _e('Link Effects CSS', 'links-headlines-studio'); ?></h4>
+                    <button type="button" class="button button-small lhs-copy-code" data-target="lhs-link-css-code"><?php _e('Copy CSS', 'links-headlines-studio'); ?></button>
+                </div>
+                <div class="lhs-code-content">
+                    <div id="lhs-link-css-code" class="lhs-code-block">
+                        <pre><code class="language-css"></code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Headline CSS Code -->
+            <div class="lhs-code-block-wrapper">
+                <div class="lhs-code-block-header">
+                    <h4><?php _e('Headline Effects CSS', 'links-headlines-studio'); ?></h4>
+                    <button type="button" class="button button-small lhs-copy-code" data-target="lhs-headline-css-code"><?php _e('Copy CSS', 'links-headlines-studio'); ?></button>
+                </div>
+                <div class="lhs-code-content">
+                    <div id="lhs-headline-css-code" class="lhs-code-block">
+                        <pre><code class="language-css"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <?php submit_button(__('Save Settings', 'links-headlines-studio'), 'primary', 'submit', false); ?>
+        <input type="button" class="button button-secondary lhs-give-me-code" value="<?php _e('Give Me Code', 'links-headlines-studio'); ?>">
         <input type="button" class="button button-secondary lhs-reset-settings" value="<?php _e('Reset to Defaults', 'links-headlines-studio'); ?>">
         <input type="button" class="button button-secondary lhs-export-settings" value="<?php _e('Export Settings', 'links-headlines-studio'); ?>">
         <input type="button" class="button button-secondary lhs-import-settings" value="<?php _e('Import Settings', 'links-headlines-studio'); ?>">
@@ -371,39 +557,12 @@ jQuery(document).ready(function($) {
         }
     }
     
-    // Update range display
-    function updateRangeDisplay() {
-        $('#lhs_headline_fade_opacity').on('input', function() {
-            $(this).next('.lhs-range-value').text($(this).val());
-        });
-        
-        $('#lhs_link_slide_opacity').on('input', function() {
-            $(this).next('.lhs-range-value').text($(this).val());
-        });
-        
-        $('#lhs_headline_brightness').on('input', function() {
-            $(this).next('.lhs-range-value').text($(this).val());
-        });
-        
-        $('#lhs_headline_contrast').on('input', function() {
-            $(this).next('.lhs-range-value').text($(this).val());
-        });
-    }
-    
-    // Initialize range displays
-    function initRangeDisplays() {
-        $('#lhs_headline_fade_opacity').next('.lhs-range-value').text($('#lhs_headline_fade_opacity').val());
-        $('#lhs_link_slide_opacity').next('.lhs-range-value').text($('#lhs_link_slide_opacity').val());
-        $('#lhs_headline_brightness').next('.lhs-range-value').text($('#lhs_headline_brightness').val());
-        $('#lhs_headline_contrast').next('.lhs-range-value').text($('#lhs_headline_contrast').val());
-    }
-    
     // Initialize
     toggleEffectOptions();
-    updateRangeDisplay();
-    initRangeDisplays();
     
-    // Bind events
-    $('#lhs_link_effect, #lhs_headline_effect').on('change', toggleEffectOptions);
+    // Bind events for conditional options
+    $('#lhs_link_effect, #lhs_headline_effect').on('change', function() {
+        toggleEffectOptions();
+    });
 });
 </script> 
